@@ -31,7 +31,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-b from-pink-50/30 via-white to-pink-50/20 font-body">
       <Navbar />
 
-      <main className="max-w-lg mx-auto pb-24">
+      <main className="max-w-lg mx-auto pt-32 pb-24">
         {/* Follower Tracker */}
         <FollowerTracker
           followers={followers}
@@ -68,6 +68,13 @@ function App() {
           onUpdateContent={handleUpdateContent}
         />
       </main>
+
+      {/* Footer */}
+      <footer className="w-full py-4 bg-gradient-to-r from-pink-100 to-pink-200 border-t border-pink-200">
+        <p className="text-center text-sm font-body text-pink-600 font-medium tracking-wide">
+          Bartu Seni Çok Seviyor ❤️
+        </p>
+      </footer>
 
       {/* Chatbot */}
       <Chatbot
