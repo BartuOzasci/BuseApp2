@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Sparkles } from "lucide-react";
-import {
-  WELCOME_MESSAGES,
-  FEATURE_LIST,
-  MONTHS_TR,
-} from "../data/chatbotData";
+import { WELCOME_MESSAGES, FEATURE_LIST, MONTHS_TR } from "../data/chatbotData";
 import { toDateStr, getWeekDates, getDayName } from "../utils/dateUtils";
 
 const Chatbot = ({ todos, contentCalendar }) => {
@@ -58,7 +54,10 @@ const Chatbot = ({ todos, contentCalendar }) => {
     for (const msg of WELCOME_MESSAGES) {
       await addBotMessage(msg, 600);
     }
-    await addBotMessage("Aşağıdaki butonlardan birini seçerek başlayabilirsin 👇", 400);
+    await addBotMessage(
+      "Aşağıdaki butonlardan birini seçerek başlayabilirsin 👇",
+      400,
+    );
   };
 
   const handleFeatureClick = async (feature) => {

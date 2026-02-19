@@ -7,6 +7,12 @@ import {
   Plus,
   Save,
   Film,
+  Camera,
+  Video,
+  Mic,
+  PenTool,
+  ImageIcon,
+  Sparkles,
 } from "lucide-react";
 import { DAYS_TR } from "../data/chatbotData";
 import {
@@ -81,6 +87,42 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
   };
 
   const isToday = (date) => toDateStr(date) === toDateStr(today);
+
+  const getContentIcon = (text) => {
+    const lower = text.toLowerCase();
+    if (
+      lower.includes("video") ||
+      lower.includes("reel") ||
+      lower.includes("tiktok")
+    )
+      return <Video size={16} className="text-pink-500" />;
+    if (
+      lower.includes("fotoğraf") ||
+      lower.includes("foto") ||
+      lower.includes("post")
+    )
+      return <Camera size={16} className="text-purple-500" />;
+    if (
+      lower.includes("story") ||
+      lower.includes("hikaye") ||
+      lower.includes("stories")
+    )
+      return <ImageIcon size={16} className="text-orange-500" />;
+    if (
+      lower.includes("podcast") ||
+      lower.includes("ses") ||
+      lower.includes("canlı") ||
+      lower.includes("live")
+    )
+      return <Mic size={16} className="text-blue-500" />;
+    if (
+      lower.includes("blog") ||
+      lower.includes("yazı") ||
+      lower.includes("makale")
+    )
+      return <PenTool size={16} className="text-green-500" />;
+    return <Sparkles size={16} className="text-pink-400" />;
+  };
 
   const weekLabel = () => {
     const start = weekDates[0];
@@ -173,12 +215,17 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
               </div>
 
               {/* Content items */}
-              <div className="px-4 py-2 space-y-1.5">
+              <div className="px-4 py-2.5 space-y-2">
                 {content.map((item) => (
-                  <div key={item.id} className="flex items-start gap-2 group">
-                    <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0"></div>
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 group bg-gradient-to-r from-pink-50/60 to-transparent rounded-xl px-3 py-2.5 hover:from-pink-50 transition-all"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0 border border-pink-100">
+                      {getContentIcon(item.text)}
+                    </div>
                     {editingDate === item.id ? (
-                      <div className="flex-1 flex gap-1">
+                      <div className="flex-1 flex gap-2">
                         <input
                           type="text"
                           value={editText}
@@ -186,33 +233,33 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
                           onKeyDown={(e) =>
                             e.key === "Enter" && saveEdit(date, item.id)
                           }
-                          className="flex-1 text-sm px-3 py-2 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
+                          className="flex-1 text-base px-4 py-2.5 border border-pink-200 rounded-xl outline-none focus:border-pink-400 font-body"
                           autoFocus
                         />
                         <button
                           onClick={() => saveEdit(date, item.id)}
-                          className="p-1 text-pink-500"
+                          className="p-2 text-white bg-pink-500 rounded-xl hover:bg-pink-600 transition-colors"
                         >
-                          <Save size={16} />
+                          <Save size={18} />
                         </button>
                       </div>
                     ) : (
                       <>
-                        <span className="flex-1 text-sm text-gray-600 font-body">
+                        <span className="flex-1 text-base text-gray-700 font-body font-medium">
                           {item.text}
                         </span>
                         <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => startEdit(item)}
-                            className="p-1 text-gray-300 hover:text-pink-500"
+                            className="p-1.5 text-gray-300 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all"
                           >
-                            <Edit3 size={14} />
+                            <Edit3 size={16} />
                           </button>
                           <button
                             onClick={() => deleteContent(date, item.id)}
-                            className="p-1 text-gray-300 hover:text-red-500"
+                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </>
@@ -220,7 +267,7 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
                   </div>
                 ))}
                 {content.length === 0 && !newContentDate && (
-                  <p className="text-xs text-gray-300 py-1 font-body italic">
+                  <p className="text-sm text-gray-300 py-2 font-body italic text-center">
                     İçerik planlanmadı
                   </p>
                 )}
@@ -228,22 +275,22 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
 
               {/* Add content input */}
               {newContentDate === toDateStr(date) && (
-                <div className="px-4 py-2 border-t border-pink-50">
-                  <div className="flex gap-1.5">
+                <div className="px-4 py-3 border-t border-pink-50 bg-pink-50/30">
+                  <div className="flex gap-2">
                     <input
                       type="text"
                       value={newContentText}
                       onChange={(e) => setNewContentText(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addContent(date)}
-                      placeholder="İçerik planı ekle..."
-                      className="flex-1 text-sm px-3 py-2.5 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
+                      placeholder="İçerik planı ekle... (video, fotoğraf, story...)"
+                      className="flex-1 text-base px-4 py-3 rounded-xl border border-pink-200 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 font-body bg-white shadow-sm"
                       autoFocus
                     />
                     <button
                       onClick={() => addContent(date)}
-                      className="px-3 py-2.5 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                      className="px-4 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all shadow-sm"
                     >
-                      <Plus size={16} />
+                      <Plus size={20} />
                     </button>
                   </div>
                 </div>

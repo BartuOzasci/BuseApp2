@@ -39,6 +39,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
       id: Date.now(),
       text: newTodoText.trim(),
       completed: false,
+      completedAt: null,
     };
     onUpdateTodos(dateStr, [...currentTodos, newTodo]);
     setNewTodoText("");
@@ -47,9 +48,22 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
   const toggleTodo = (date, todoId) => {
     const dateStr = toDateStr(date);
     const currentTodos = todos[dateStr] || [];
-    const updated = currentTodos.map((t) =>
-      t.id === todoId ? { ...t, completed: !t.completed } : t,
-    );
+    const updated = currentTodos.map((t) => {
+      if (t.id === todoId) {
+        const nowCompleted = !t.completed;
+        return {
+          ...t,
+          completed: nowCompleted,
+          completedAt: nowCompleted
+            ? new Date().toLocaleTimeString("tr-TR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : null,
+        };
+      }
+      return t;
+    });
     onUpdateTodos(dateStr, updated);
   };
 
@@ -236,7 +250,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                   {dateTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="flex items-center gap-2 group"
+                      className="flex items-center gap-2.5 group"
                     >
                       <button
                         onClick={() => toggleTodo(date, todo.id)}
@@ -259,14 +273,19 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                           onKeyDown={(e) =>
                             e.key === "Enter" && saveEdit(date, todo.id)
                           }
-                          className="flex-1 text-sm px-3 py-1.5 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
+                          className="flex-1 text-base px-3 py-2 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
                           autoFocus
                         />
                       ) : (
                         <span
-                          className={`flex-1 text-sm font-body ${todo.completed ? "line-through text-gray-300" : "text-gray-600"}`}
+                          className={`flex-1 text-base font-body ${todo.completed ? "line-through text-gray-300" : "text-gray-700"}`}
                         >
                           {todo.text}
+                        </span>
+                      )}
+                      {todo.completed && todo.completedAt && (
+                        <span className="text-xs text-gray-300 font-body whitespace-nowrap">
+                          {todo.completedAt}
                         </span>
                       )}
                       <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -286,7 +305,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                     </div>
                   ))}
                   {dateTodos.length === 0 && (
-                    <p className="text-sm text-gray-300 text-center py-4 font-body">
+                    <p className="text-base text-gray-300 text-center py-4 font-body">
                       Henüz görev eklenmedi
                     </p>
                   )}
@@ -302,7 +321,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                         onChange={(e) => setNewTodoText(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addTodo(date)}
                         placeholder="Yeni görev ekle..."
-                        className="flex-1 text-sm px-3 py-2 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
+                        className="flex-1 text-base px-4 py-2.5 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
                       />
                       <button
                         onClick={() => addTodo(date)}
