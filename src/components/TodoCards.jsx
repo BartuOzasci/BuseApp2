@@ -200,7 +200,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
       {/* Cards Container */}
       <div
         ref={cardContainerRef}
-        className="relative h-80 overflow-hidden"
+        className="relative h-96 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -225,7 +225,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
               }}
             >
               <div
-                className={`bg-white rounded-2xl border ${isToday(date) ? "border-pink-300" : "border-pink-100"} shadow-card h-72 flex flex-col overflow-hidden`}
+                className={`bg-white rounded-2xl border ${isToday(date) ? "border-pink-300" : "border-pink-100"} shadow-card h-[22rem] flex flex-col overflow-hidden`}
               >
                 {/* Card Header */}
                 <div
@@ -246,22 +246,22 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                 </div>
 
                 {/* Todos List */}
-                <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
+                <div className="flex-1 overflow-y-auto px-3 py-2.5 space-y-2.5">
                   {dateTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="flex items-center gap-2.5 group"
+                      className="flex items-center gap-3 group"
                     >
                       <button
                         onClick={() => toggleTodo(date, todo.id)}
-                        className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                        className={`w-7 h-7 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                           todo.completed
                             ? "border-pink-500 bg-pink-500"
                             : "border-pink-200 hover:border-pink-400"
                         }`}
                       >
                         {todo.completed && (
-                          <Check size={12} className="text-white" />
+                          <Check size={14} className="text-white" />
                         )}
                       </button>
                       {editingId === todo.id ? (
@@ -273,33 +273,33 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                           onKeyDown={(e) =>
                             e.key === "Enter" && saveEdit(date, todo.id)
                           }
-                          className="flex-1 text-base px-3 py-2 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
+                          className="flex-1 text-lg px-4 py-2.5 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
                           autoFocus
                         />
                       ) : (
                         <span
-                          className={`flex-1 text-base font-body ${todo.completed ? "line-through text-gray-300" : "text-gray-700"}`}
+                          className={`flex-1 text-lg font-body ${todo.completed ? "line-through text-gray-300" : "text-gray-700"}`}
                         >
                           {todo.text}
                         </span>
                       )}
                       {todo.completed && todo.completedAt && (
-                        <span className="text-xs text-gray-300 font-body whitespace-nowrap">
+                        <span className="text-sm text-gray-400 font-body whitespace-nowrap">
                           {todo.completedAt}
                         </span>
                       )}
-                      <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => startEdit(todo)}
-                          className="p-1 hover:text-pink-500 text-gray-300"
+                          className="p-1.5 hover:text-pink-500 text-gray-300"
                         >
-                          <Edit3 size={14} />
+                          <Edit3 size={18} />
                         </button>
                         <button
                           onClick={() => deleteTodo(date, todo.id)}
-                          className="p-1 hover:text-red-500 text-gray-300"
+                          className="p-1.5 hover:text-red-500 text-gray-300"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
@@ -313,7 +313,7 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
 
                 {/* Add Todo */}
                 {position === 0 && (
-                  <div className="px-3 py-2.5 border-t border-pink-50">
+                  <div className="px-3 py-3 border-t border-pink-50">
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -321,13 +321,13 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                         onChange={(e) => setNewTodoText(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addTodo(date)}
                         placeholder="Yeni görev ekle..."
-                        className="flex-1 text-base px-4 py-2.5 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
+                        className="flex-1 text-lg px-4 py-3 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
                       />
                       <button
                         onClick={() => addTodo(date)}
-                        className="px-3 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                        className="px-4 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
                       >
-                        <Plus size={16} />
+                        <Plus size={20} />
                       </button>
                     </div>
                   </div>
