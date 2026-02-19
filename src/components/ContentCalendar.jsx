@@ -95,9 +95,9 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
     <section className="px-4 py-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-display font-bold text-gray-800 flex items-center gap-2">
-          <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
-            <Film size={12} className="text-white" />
+        <h2 className="text-lg font-display font-bold text-gray-800 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+            <Film size={16} className="text-white" />
           </span>
           İçerik Takvimi
         </h2>
@@ -109,16 +109,16 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
           onClick={prevWeek}
           className="p-1.5 rounded-lg hover:bg-pink-50 transition-colors"
         >
-          <ChevronLeft size={16} className="text-pink-500" />
+          <ChevronLeft size={20} className="text-pink-500" />
         </button>
-        <span className="text-sm font-semibold text-gray-700 font-body">
+        <span className="text-base font-semibold text-gray-700 font-body">
           {weekLabel()}
         </span>
         <button
           onClick={nextWeek}
           className="p-1.5 rounded-lg hover:bg-pink-50 transition-colors"
         >
-          <ChevronRight size={16} className="text-pink-500" />
+          <ChevronRight size={20} className="text-pink-500" />
         </button>
       </div>
 
@@ -143,17 +143,17 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-xs font-bold font-body ${dayIsToday ? "text-white" : "text-pink-600"}`}
+                    className={`text-sm font-bold font-body ${dayIsToday ? "text-white" : "text-pink-600"}`}
                   >
                     {getDayName(date)}
                   </span>
                   <span
-                    className={`text-xs font-body ${dayIsToday ? "text-pink-100" : "text-gray-400"}`}
+                    className={`text-sm font-body ${dayIsToday ? "text-pink-100" : "text-gray-400"}`}
                   >
                     {date.getDate()} {MONTHS_TR[date.getMonth()]}
                   </span>
                   {dayIsToday && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[9px] font-medium">
+                    <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-medium">
                       BUGÜN
                     </span>
                   )}
@@ -168,7 +168,7 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
                   }
                   className={`p-1 rounded-full transition-colors ${dayIsToday ? "hover:bg-white/20 text-white" : "hover:bg-pink-100 text-pink-500"}`}
                 >
-                  <Plus size={14} />
+                  <Plus size={18} />
                 </button>
               </div>
 
@@ -176,7 +176,7 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
               <div className="px-4 py-2 space-y-1.5">
                 {content.map((item) => (
                   <div key={item.id} className="flex items-start gap-2 group">
-                    <div className="w-1.5 h-1.5 rounded-full bg-pink-300 mt-1.5 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0"></div>
                     {editingDate === item.id ? (
                       <div className="flex-1 flex gap-1">
                         <input
@@ -186,33 +186,33 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
                           onKeyDown={(e) =>
                             e.key === "Enter" && saveEdit(date, item.id)
                           }
-                          className="flex-1 text-xs px-2 py-1 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
+                          className="flex-1 text-sm px-3 py-2 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
                           autoFocus
                         />
                         <button
                           onClick={() => saveEdit(date, item.id)}
                           className="p-1 text-pink-500"
                         >
-                          <Save size={12} />
+                          <Save size={16} />
                         </button>
                       </div>
                     ) : (
                       <>
-                        <span className="flex-1 text-xs text-gray-600 font-body">
+                        <span className="flex-1 text-sm text-gray-600 font-body">
                           {item.text}
                         </span>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => startEdit(item)}
-                            className="p-0.5 text-gray-300 hover:text-pink-500"
+                            className="p-1 text-gray-300 hover:text-pink-500"
                           >
-                            <Edit3 size={10} />
+                            <Edit3 size={14} />
                           </button>
                           <button
                             onClick={() => deleteContent(date, item.id)}
-                            className="p-0.5 text-gray-300 hover:text-red-500"
+                            className="p-1 text-gray-300 hover:text-red-500"
                           >
-                            <Trash2 size={10} />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </>
@@ -220,7 +220,7 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
                   </div>
                 ))}
                 {content.length === 0 && !newContentDate && (
-                  <p className="text-[10px] text-gray-300 py-1 font-body italic">
+                  <p className="text-xs text-gray-300 py-1 font-body italic">
                     İçerik planlanmadı
                   </p>
                 )}
@@ -236,14 +236,14 @@ const ContentCalendar = ({ contentCalendar, onUpdateContent }) => {
                       onChange={(e) => setNewContentText(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addContent(date)}
                       placeholder="İçerik planı ekle..."
-                      className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
+                      className="flex-1 text-sm px-3 py-2.5 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
                       autoFocus
                     />
                     <button
                       onClick={() => addContent(date)}
-                      className="px-2.5 py-1.5 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                      className="px-3 py-2.5 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
                     >
-                      <Plus size={12} />
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>

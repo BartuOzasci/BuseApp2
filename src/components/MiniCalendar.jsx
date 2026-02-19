@@ -28,16 +28,16 @@ const MiniCalendar = () => {
             onClick={prevMonth}
             className="p-1.5 rounded-lg hover:bg-pink-50 transition-colors"
           >
-            <ChevronLeft size={16} className="text-pink-500" />
+            <ChevronLeft size={20} className="text-pink-500" />
           </button>
-          <h3 className="text-sm font-semibold font-display text-gray-700">
+          <h3 className="text-base font-semibold font-display text-gray-700">
             {MONTHS_TR[viewDate.getMonth()]} {viewDate.getFullYear()}
           </h3>
           <button
             onClick={nextMonth}
             className="p-1.5 rounded-lg hover:bg-pink-50 transition-colors"
           >
-            <ChevronRight size={16} className="text-pink-500" />
+            <ChevronRight size={20} className="text-pink-500" />
           </button>
         </div>
 
@@ -46,7 +46,7 @@ const MiniCalendar = () => {
           {["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"].map((day) => (
             <div
               key={day}
-              className="text-center text-[10px] font-medium text-pink-400 py-1"
+              className="text-center text-xs font-medium text-pink-400 py-1"
             >
               {day}
             </div>
@@ -61,7 +61,7 @@ const MiniCalendar = () => {
               <div
                 key={idx}
                 className={`
-                  text-center text-[11px] py-1.5 rounded-lg font-body transition-all
+                  text-center text-sm py-2 rounded-lg font-body transition-all
                   ${!day.currentMonth ? "text-gray-200" : "text-gray-600"}
                   ${isToday ? "bg-gradient-to-br from-pink-500 to-pink-600 text-white font-bold shadow-md scale-110" : ""}
                   ${day.currentMonth && !isToday ? "hover:bg-pink-50" : ""}
@@ -76,7 +76,7 @@ const MiniCalendar = () => {
         {/* Today indicator */}
         <div className="mt-3 flex items-center justify-center gap-2">
           <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-          <span className="text-xs text-gray-400 font-body">
+          <span className="text-sm text-gray-400 font-body">
             Bugün: {today.getDate()} {MONTHS_TR[today.getMonth()]}{" "}
             {today.getFullYear()}
           </span>

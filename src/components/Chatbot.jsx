@@ -133,7 +133,7 @@ const Chatbot = ({ todos, contentCalendar }) => {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-4 left-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+        className={`fixed bottom-5 left-5 z-50 w-16 h-16 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
           isOpen
             ? "bg-gray-500 rotate-90 scale-90"
             : "bg-gradient-to-br from-pink-500 to-pink-600 hover:shadow-card-hover hover:scale-105"
@@ -143,40 +143,40 @@ const Chatbot = ({ todos, contentCalendar }) => {
         }}
       >
         {isOpen ? (
-          <X size={22} className="text-white" />
+          <X size={26} className="text-white" />
         ) : (
-          <MessageCircle size={22} className="text-white" />
+          <MessageCircle size={26} className="text-white" />
         )}
       </button>
 
       {/* Pulse effect */}
       {!isOpen && (
-        <div className="fixed bottom-4 left-4 z-40 w-14 h-14 rounded-full bg-pink-400 animate-ping opacity-20 pointer-events-none"></div>
+        <div className="fixed bottom-5 left-5 z-40 w-16 h-16 rounded-full bg-pink-400 animate-ping opacity-20 pointer-events-none"></div>
       )}
 
       {/* Chat Window */}
       {isOpen && (
         <div
-          className="fixed bottom-20 left-4 right-4 z-50 max-w-sm bg-white rounded-2xl shadow-2xl border border-pink-100 overflow-hidden animate-slideUp"
+          className="fixed bottom-24 left-4 right-4 z-50 max-w-sm bg-white rounded-2xl shadow-2xl border border-pink-100 overflow-hidden animate-slideUp"
           style={{ maxHeight: "70vh" }}
         >
           {/* Chat Header */}
           <div className="bg-gradient-to-r from-pink-500 to-pink-600 px-4 py-3 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-              <Sparkles size={16} className="text-white" />
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Sparkles size={20} className="text-white" />
             </div>
             <div>
-              <p className="text-white text-sm font-semibold font-body">
+              <p className="text-white text-base font-semibold font-body">
                 Asistan
               </p>
-              <p className="text-pink-100 text-[10px]">
+              <p className="text-pink-100 text-xs">
                 Her zaman buradayım ✨
               </p>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="h-72 overflow-y-auto px-4 py-3 space-y-3 bg-pink-50/30">
+          <div className="h-80 overflow-y-auto px-4 py-3 space-y-3 bg-pink-50/30">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -189,11 +189,11 @@ const Chatbot = ({ todos, contentCalendar }) => {
                       : "bg-white border border-pink-100 text-gray-700 rounded-bl-md shadow-sm"
                   }`}
                 >
-                  <p className="text-xs font-body whitespace-pre-line">
+                  <p className="text-sm font-body whitespace-pre-line">
                     {msg.text}
                   </p>
                   <p
-                    className={`text-[9px] mt-1 ${msg.type === "user" ? "text-pink-200" : "text-gray-300"}`}
+                    className={`text-[10px] mt-1 ${msg.type === "user" ? "text-pink-200" : "text-gray-300"}`}
                   >
                     {formatTime(msg.time)}
                   </p>
@@ -208,7 +208,7 @@ const Chatbot = ({ todos, contentCalendar }) => {
                   <button
                     key={feature.id}
                     onClick={() => handleFeatureClick(feature)}
-                    className="w-full text-left px-3 py-2 rounded-xl bg-white border border-pink-100 hover:border-pink-300 hover:bg-pink-50 transition-all text-xs font-body text-gray-600"
+                    className="w-full text-left px-4 py-3 rounded-xl bg-white border border-pink-100 hover:border-pink-300 hover:bg-pink-50 transition-all text-sm font-body text-gray-600"
                   >
                     {feature.label}
                   </button>
@@ -246,7 +246,7 @@ const Chatbot = ({ todos, contentCalendar }) => {
                 <button
                   key={action.id}
                   onClick={() => handleQuickAction(action)}
-                  className="flex-shrink-0 px-2.5 py-1.5 rounded-full bg-pink-50 text-pink-600 text-[10px] font-medium font-body hover:bg-pink-100 transition-colors whitespace-nowrap"
+                  className="flex-shrink-0 px-3.5 py-2 rounded-full bg-pink-50 text-pink-600 text-xs font-medium font-body hover:bg-pink-100 transition-colors whitespace-nowrap"
                 >
                   {action.label}
                 </button>

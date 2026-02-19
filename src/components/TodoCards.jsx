@@ -121,17 +121,17 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
     <section className="px-4 py-3">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-display font-bold text-gray-800 flex items-center gap-2">
-          <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
-            <Check size={12} className="text-white" />
+        <h2 className="text-lg font-display font-bold text-gray-800 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+            <Check size={16} className="text-white" />
           </span>
           Yapılacaklar
         </h2>
         <button
           onClick={() => setShowDatePicker(!showDatePicker)}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-pink-600 bg-pink-50 hover:bg-pink-100 transition-colors font-body"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-pink-600 bg-pink-50 hover:bg-pink-100 transition-colors font-body"
         >
-          <Calendar size={12} />
+          <Calendar size={16} />
           Tarih Seç
         </button>
       </div>
@@ -143,11 +143,11 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
             type="date"
             value={datePickerValue}
             onChange={(e) => setDatePickerValue(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-pink-200 text-sm font-body focus:outline-none focus:border-pink-400 mb-2"
+            className="w-full px-4 py-3 rounded-lg border border-pink-200 text-base font-body focus:outline-none focus:border-pink-400 mb-2"
           />
           <button
             onClick={selectDate}
-            className="w-full py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg text-sm font-medium"
+            className="w-full py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg text-base font-medium"
           >
             Git
           </button>
@@ -160,17 +160,17 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
           onClick={() => goToDate(-1)}
           className="p-2 rounded-full hover:bg-pink-50 transition-colors"
         >
-          <ChevronLeft size={18} className="text-pink-500" />
+          <ChevronLeft size={22} className="text-pink-500" />
         </button>
-        <div className="flex items-center gap-1 text-sm font-body">
-          <span className="text-gray-400 text-xs">
+        <div className="flex items-center gap-1 text-base font-body">
+          <span className="text-gray-400 text-sm">
             {DAYS_TR[centerDate.getDay()]}
           </span>
           <span className="font-semibold text-gray-700">
             {formatCardDate(centerDate)}
           </span>
           {isToday(centerDate) && (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-600 text-[10px] font-medium">
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 text-xs font-medium">
               Bugün
             </span>
           )}
@@ -179,14 +179,14 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
           onClick={() => goToDate(1)}
           className="p-2 rounded-full hover:bg-pink-50 transition-colors"
         >
-          <ChevronRight size={18} className="text-pink-500" />
+          <ChevronRight size={22} className="text-pink-500" />
         </button>
       </div>
 
       {/* Cards Container */}
       <div
         ref={cardContainerRef}
-        className="relative h-72 overflow-hidden"
+        className="relative h-80 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -211,21 +211,21 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
               }}
             >
               <div
-                className={`bg-white rounded-2xl border ${isToday(date) ? "border-pink-300" : "border-pink-100"} shadow-card h-64 flex flex-col overflow-hidden`}
+                className={`bg-white rounded-2xl border ${isToday(date) ? "border-pink-300" : "border-pink-100"} shadow-card h-72 flex flex-col overflow-hidden`}
               >
                 {/* Card Header */}
                 <div
                   className={`px-4 py-2.5 border-b border-pink-50 flex items-center justify-between ${isToday(date) ? "bg-gradient-to-r from-pink-50 to-pink-100/50" : "bg-pink-50/30"}`}
                 >
                   <div>
-                    <p className="text-[10px] text-pink-400 uppercase tracking-wide font-body">
+                    <p className="text-xs text-pink-400 uppercase tracking-wide font-body">
                       {DAYS_TR[date.getDay()]}
                     </p>
-                    <p className="text-sm font-semibold text-gray-700 font-body">
+                    <p className="text-base font-semibold text-gray-700 font-body">
                       {formatCardDate(date)}
                     </p>
                   </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 font-medium">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-pink-100 text-pink-600 font-medium">
                     {dateTodos.filter((t) => t.completed).length}/
                     {dateTodos.length}
                   </span>
@@ -240,14 +240,14 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                     >
                       <button
                         onClick={() => toggleTodo(date, todo.id)}
-                        className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                        className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
                           todo.completed
                             ? "border-pink-500 bg-pink-500"
                             : "border-pink-200 hover:border-pink-400"
                         }`}
                       >
                         {todo.completed && (
-                          <Check size={10} className="text-white" />
+                          <Check size={12} className="text-white" />
                         )}
                       </button>
                       {editingId === todo.id ? (
@@ -259,34 +259,34 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
                           onKeyDown={(e) =>
                             e.key === "Enter" && saveEdit(date, todo.id)
                           }
-                          className="flex-1 text-xs px-2 py-1 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
+                          className="flex-1 text-sm px-3 py-1.5 border border-pink-200 rounded-lg outline-none focus:border-pink-400"
                           autoFocus
                         />
                       ) : (
                         <span
-                          className={`flex-1 text-xs font-body ${todo.completed ? "line-through text-gray-300" : "text-gray-600"}`}
+                          className={`flex-1 text-sm font-body ${todo.completed ? "line-through text-gray-300" : "text-gray-600"}`}
                         >
                           {todo.text}
                         </span>
                       )}
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => startEdit(todo)}
-                          className="p-0.5 hover:text-pink-500 text-gray-300"
+                          className="p-1 hover:text-pink-500 text-gray-300"
                         >
-                          <Edit3 size={10} />
+                          <Edit3 size={14} />
                         </button>
                         <button
                           onClick={() => deleteTodo(date, todo.id)}
-                          className="p-0.5 hover:text-red-500 text-gray-300"
+                          className="p-1 hover:text-red-500 text-gray-300"
                         >
-                          <Trash2 size={10} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
                   ))}
                   {dateTodos.length === 0 && (
-                    <p className="text-xs text-gray-300 text-center py-4 font-body">
+                    <p className="text-sm text-gray-300 text-center py-4 font-body">
                       Henüz görev eklenmedi
                     </p>
                   )}
@@ -294,21 +294,21 @@ const TodoCards = ({ todos, onUpdateTodos }) => {
 
                 {/* Add Todo */}
                 {position === 0 && (
-                  <div className="px-3 py-2 border-t border-pink-50">
-                    <div className="flex gap-1.5">
+                  <div className="px-3 py-2.5 border-t border-pink-50">
+                    <div className="flex gap-2">
                       <input
                         type="text"
                         value={newTodoText}
                         onChange={(e) => setNewTodoText(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addTodo(date)}
                         placeholder="Yeni görev ekle..."
-                        className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
+                        className="flex-1 text-sm px-3 py-2 rounded-lg border border-pink-100 outline-none focus:border-pink-400 font-body"
                       />
                       <button
                         onClick={() => addTodo(date)}
-                        className="px-2.5 py-1.5 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                        className="px-3 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
                       >
-                        <Plus size={12} />
+                        <Plus size={16} />
                       </button>
                     </div>
                   </div>

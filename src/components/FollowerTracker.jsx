@@ -25,9 +25,9 @@ const TIME_RANGES = [
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white rounded-xl shadow-lg border border-pink-100 px-3 py-2">
-        <p className="text-xs text-gray-400">{label}</p>
-        <p className="text-sm font-semibold text-pink-600">
+      <div className="bg-white rounded-xl shadow-lg border border-pink-100 px-4 py-3">
+        <p className="text-sm text-gray-400">{label}</p>
+        <p className="text-base font-semibold text-pink-600">
           {Number(payload[0].value).toLocaleString("tr-TR")} takipçi
         </p>
       </div>
@@ -80,13 +80,13 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
         <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl p-4 mb-4 text-white shadow-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-pink-100 text-xs font-body">Mevcut Takipçi</p>
-              <p className="text-2xl font-bold font-display">
+              <p className="text-pink-100 text-sm font-body">Mevcut Takipçi</p>
+              <p className="text-3xl font-bold font-display">
                 {lastCount.toLocaleString("tr-TR")}
               </p>
             </div>
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${diff >= 0 ? "bg-white/20" : "bg-red-400/30"}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${diff >= 0 ? "bg-white/20" : "bg-red-400/30"}`}
             >
               <TrendingUp size={12} className={diff < 0 ? "rotate-180" : ""} />
               <span>
@@ -103,20 +103,20 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Users
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-pink-300"
+              size={20}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300"
             />
             <input
               type="number"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Mevcut takipçi sayını gir..."
-              className="w-full pl-9 pr-4 py-3 rounded-xl border border-pink-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-sm font-body transition-all bg-white"
+              className="w-full pl-10 pr-4 py-4 rounded-xl border border-pink-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-base font-body transition-all bg-white"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl font-medium text-sm hover:shadow-card-hover active:scale-95 transition-all flex items-center gap-1"
+            className="px-5 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl font-medium text-base hover:shadow-card-hover active:scale-95 transition-all flex items-center gap-1.5"
           >
             <Plus size={16} />
             <span>Ekle</span>
@@ -127,11 +127,11 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
       {/* Chart */}
       {chartData.length > 0 && (
         <div className="bg-white rounded-2xl border border-pink-50 p-4 shadow-card mb-3">
-          <h3 className="text-sm font-semibold text-gray-700 font-body mb-3 flex items-center gap-2">
-            <TrendingUp size={14} className="text-pink-500" />
+          <h3 className="text-base font-semibold text-gray-700 font-body mb-3 flex items-center gap-2">
+            <TrendingUp size={18} className="text-pink-500" />
             Takipçi Grafiği
           </h3>
-          <div className="h-48">
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}
@@ -192,7 +192,7 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
                 setSelectedRange(range.key);
                 setShowTable(true);
               }}
-              className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium font-body transition-all ${
+              className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium font-body transition-all ${
                 selectedRange === range.key
                   ? "bg-pink-500 text-white shadow-card"
                   : "bg-pink-50 text-pink-600 hover:bg-pink-100"
@@ -208,7 +208,7 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
       {showTable && selectedRange && (
         <div className="mt-3 bg-white rounded-2xl border border-pink-100 shadow-card overflow-hidden animate-slideUp">
           <div className="flex items-center justify-between p-3 border-b border-pink-50">
-            <h4 className="text-sm font-semibold text-gray-700 font-body">
+            <h4 className="text-base font-semibold text-gray-700 font-body">
               {TIME_RANGES.find((r) => r.key === selectedRange)?.label}
             </h4>
             <button
@@ -218,18 +218,18 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
               <X size={16} className="text-gray-400" />
             </button>
           </div>
-          <div className="max-h-48 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto">
             {filteredData.length > 0 ? (
               <table className="w-full">
                 <thead className="sticky top-0 bg-pink-50/80 backdrop-blur-sm">
                   <tr>
-                    <th className="text-left px-4 py-2 text-xs font-medium text-pink-600">
+                    <th className="text-left px-4 py-2.5 text-sm font-medium text-pink-600">
                       Tarih
                     </th>
-                    <th className="text-right px-4 py-2 text-xs font-medium text-pink-600">
+                    <th className="text-right px-4 py-2.5 text-sm font-medium text-pink-600">
                       Takipçi
                     </th>
-                    <th className="text-right px-4 py-2 text-xs font-medium text-pink-600">
+                    <th className="text-right px-4 py-2.5 text-sm font-medium text-pink-600">
                       Değişim
                     </th>
                   </tr>
@@ -244,14 +244,14 @@ const FollowerTracker = ({ followers, onAddFollower }) => {
                         key={item.fullDate}
                         className="border-b border-pink-50/50 hover:bg-pink-50/30 transition-colors"
                       >
-                        <td className="px-4 py-2.5 text-xs text-gray-600">
+                        <td className="px-4 py-3 text-sm text-gray-600">
                           {item.date}
                         </td>
-                        <td className="px-4 py-2.5 text-xs text-gray-800 font-medium text-right">
+                        <td className="px-4 py-3 text-sm text-gray-800 font-medium text-right">
                           {item.count.toLocaleString("tr-TR")}
                         </td>
                         <td
-                          className={`px-4 py-2.5 text-xs font-medium text-right ${change >= 0 ? "text-green-500" : "text-red-500"}`}
+                          className={`px-4 py-3 text-sm font-medium text-right ${change >= 0 ? "text-green-500" : "text-red-500"}`}
                         >
                           {change >= 0 ? "+" : ""}
                           {change.toLocaleString("tr-TR")}
