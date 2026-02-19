@@ -1,11 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { MessageCircle, X, Sparkles } from "lucide-react";
 import {
   WELCOME_MESSAGES,
   FEATURE_LIST,
-  QUICK_ACTIONS,
   MONTHS_TR,
-  DAYS_TR,
 } from "../data/chatbotData";
 import { toDateStr, getWeekDates, getDayName } from "../utils/dateUtils";
 
@@ -14,15 +12,26 @@ const Chatbot = ({ todos, contentCalendar }) => {
   const [messages, setMessages] = useState([]);
   const [hasInit, setHasInit] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
+  const lastBotMsgRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Scroll to the TOP of the last bot message
+  const scrollToLastBot = () => {
+    setTimeout(() => {
+      if (lastBotMsgRef.current && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const msgEl = lastBotMsgRef.current;
+        const offsetTop = msgEl.offsetTop - container.offsetTop;
+        container.scrollTo({ top: offsetTop - 8, behavior: "smooth" });
+      }
+    }, 100);
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToLastBot();
+    }
+  }, [messages, isTyping]);
 
   useEffect(() => {
     if (isOpen && !hasInit) {
@@ -49,7 +58,7 @@ const Chatbot = ({ todos, contentCalendar }) => {
     for (const msg of WELCOME_MESSAGES) {
       await addBotMessage(msg, 600);
     }
-    await addBotMessage("İşte sana yardımcı olabileceğim konular:", 400);
+    await addBotMessage("Aşağıdaki butonlardan birini seçerek başlayabilirsin 👇", 400);
   };
 
   const handleFeatureClick = async (feature) => {
@@ -68,7 +77,7 @@ const Chatbot = ({ todos, contentCalendar }) => {
       } else {
         const completed = todayTodos.filter((t) => t.completed).length;
         let response = `Bugün ${todayTodos.length} görevin var (${completed} tamamlandı):\n\n`;
-        todayTodos.forEach((todo, i) => {
+        todayTodos.forEach((todo) => {
           response += `${todo.completed ? "✅" : "⬜"} ${todo.text}\n`;
         });
         await addBotMessage(response);
@@ -109,24 +118,17 @@ const Chatbot = ({ todos, contentCalendar }) => {
     }
   };
 
-  const handleQuickAction = (action) => {
-    const feature = FEATURE_LIST.find((f) => f.id === action.id);
-    if (feature) {
-      handleFeatureClick(feature);
-    } else if (action.id === "help") {
-      setMessages((prev) => [
-        ...prev,
-        { type: "user", text: action.label, time: new Date() },
-      ]);
-      addBotMessage(
-        'Bana şunları sorabilirsin:\n\n• "Bugünkü yapılacaklarım ne?" - Bugünkü görevlerini listelerim\n• "Haftalık içerik planım ne?" - Bu haftanın içerik takvimini gösterim\n\nAyrıca aşağıdaki konularda bilgi alabılırsin! 👇',
-      );
-    }
-  };
-
   const formatTime = (date) => {
     return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
+
+  // Find the index of the last bot message
+  const lastBotIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].type === "bot") return i;
+    }
+    return -1;
+  })();
 
   return (
     <>
@@ -158,7 +160,7 @@ const Chatbot = ({ todos, contentCalendar }) => {
       {isOpen && (
         <div
           className="fixed bottom-24 left-4 right-4 z-50 max-w-sm bg-white rounded-2xl shadow-2xl border border-pink-100 overflow-hidden animate-slideUp"
-          style={{ maxHeight: "70vh" }}
+          style={{ maxHeight: "75vh" }}
         >
           {/* Chat Header */}
           <div className="bg-gradient-to-r from-pink-500 to-pink-600 px-4 py-3 flex items-center gap-3">
@@ -169,52 +171,59 @@ const Chatbot = ({ todos, contentCalendar }) => {
               <p className="text-white text-base font-semibold font-body">
                 Asistan
               </p>
-              <p className="text-pink-100 text-xs">
-                Her zaman buradayım ✨
-              </p>
+              <p className="text-pink-100 text-xs">Her zaman buradayım ✨</p>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="h-80 overflow-y-auto px-4 py-3 space-y-3 bg-pink-50/30">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 ${
-                    msg.type === "user"
-                      ? "bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-br-md"
-                      : "bg-white border border-pink-100 text-gray-700 rounded-bl-md shadow-sm"
-                  }`}
-                >
-                  <p className="text-sm font-body whitespace-pre-line">
-                    {msg.text}
-                  </p>
-                  <p
-                    className={`text-[10px] mt-1 ${msg.type === "user" ? "text-pink-200" : "text-gray-300"}`}
+          <div
+            ref={scrollContainerRef}
+            className="overflow-y-auto px-4 py-3 space-y-3 bg-pink-50/30"
+            style={{ maxHeight: "calc(75vh - 64px)" }}
+          >
+            {messages.map((msg, idx) => {
+              const isLastBot = msg.type === "bot" && idx === lastBotIndex;
+              return (
+                <React.Fragment key={idx}>
+                  <div
+                    ref={isLastBot ? lastBotMsgRef : null}
+                    className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    {formatTime(msg.time)}
-                  </p>
-                </div>
-              </div>
-            ))}
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-3 py-2 ${
+                        msg.type === "user"
+                          ? "bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-br-md"
+                          : "bg-white border border-pink-100 text-gray-700 rounded-bl-md shadow-sm"
+                      }`}
+                    >
+                      <p className="text-sm font-body whitespace-pre-line">
+                        {msg.text}
+                      </p>
+                      <p
+                        className={`text-[10px] mt-1 ${msg.type === "user" ? "text-pink-200" : "text-gray-300"}`}
+                      >
+                        {formatTime(msg.time)}
+                      </p>
+                    </div>
+                  </div>
 
-            {/* Feature buttons */}
-            {messages.length >= 3 && (
-              <div className="space-y-1.5">
-                {FEATURE_LIST.map((feature) => (
-                  <button
-                    key={feature.id}
-                    onClick={() => handleFeatureClick(feature)}
-                    className="w-full text-left px-4 py-3 rounded-xl bg-white border border-pink-100 hover:border-pink-300 hover:bg-pink-50 transition-all text-sm font-body text-gray-600"
-                  >
-                    {feature.label}
-                  </button>
-                ))}
-              </div>
-            )}
+                  {/* Feature buttons — shown right after the last bot message */}
+                  {isLastBot && !isTyping && (
+                    <div className="space-y-1.5 pt-1">
+                      {FEATURE_LIST.map((feature) => (
+                        <button
+                          key={feature.id}
+                          onClick={() => handleFeatureClick(feature)}
+                          className="w-full text-left px-4 py-3 rounded-xl bg-white border border-pink-100 hover:border-pink-300 hover:bg-pink-50 transition-all text-sm font-body text-gray-600 active:scale-[0.98]"
+                        >
+                          {feature.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
 
             {isTyping && (
               <div className="flex justify-start">
@@ -236,22 +245,6 @@ const Chatbot = ({ todos, contentCalendar }) => {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Actions */}
-          <div className="px-3 py-2 border-t border-pink-50 bg-white">
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-              {QUICK_ACTIONS.map((action) => (
-                <button
-                  key={action.id}
-                  onClick={() => handleQuickAction(action)}
-                  className="flex-shrink-0 px-3.5 py-2 rounded-full bg-pink-50 text-pink-600 text-xs font-medium font-body hover:bg-pink-100 transition-colors whitespace-nowrap"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       )}
