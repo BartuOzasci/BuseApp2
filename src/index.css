@@ -2,7 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom scrollbar */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: contain;
+    color: #26262b;
+    background-color: #fffdfe;
+  }
+
+  /* Editorial figures: tabular so numbers don't jitter while animating */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer components {
+  /* --- Surfaces --------------------------------------------------- */
+  .card {
+    @apply bg-white rounded-lux border border-pink-100/70 shadow-card;
+  }
+
+  .card-quiet {
+    @apply bg-white/70 rounded-2xl border border-pink-100/60;
+  }
+
+  /* --- Typography ------------------------------------------------- */
+  .eyebrow {
+    @apply text-[10px] font-semibold uppercase tracking-label text-pink-400;
+  }
+
+  .section-title {
+    @apply font-display text-[26px] leading-tight text-ink-900;
+  }
+
+  .field-label {
+    @apply text-[11px] font-medium uppercase tracking-label text-ink-400;
+  }
+
+  /* --- Controls --------------------------------------------------- */
+  .input-lux {
+    @apply w-full bg-white border border-pink-100 rounded-2xl px-4 py-3.5
+           text-[15px] text-ink-800 placeholder:text-ink-300
+           outline-none transition-all duration-200
+           focus:border-pink-300 focus:ring-4 focus:ring-pink-100/60;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5
+           bg-pink-sheen text-white text-[14px] font-semibold tracking-wide
+           shadow-card transition-all duration-200
+           hover:shadow-card-hover active:scale-[0.97];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3
+           bg-pink-50 text-pink-700 text-[13px] font-semibold
+           transition-all duration-200 hover:bg-pink-100 active:scale-[0.97];
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1
+           text-[11px] font-semibold tracking-wide;
+  }
+
+  /* Hairline divider with a soft fade at both ends */
+  .rule {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(236, 72, 153, 0.18),
+      transparent
+    );
+  }
+}
+
+/* Hide scrollbars on horizontal rails */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -11,29 +94,7 @@
   scrollbar-width: none;
 }
 
-/* Smooth scroll */
-html {
-  scroll-behavior: smooth;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: contain;
-}
-
-/* Font classes */
-.font-display {
-  font-family: 'Playfair Display', serif;
-}
-
-.font-body {
-  font-family: 'Inter', sans-serif;
-}
-
-/* Custom animations */
+/* Legacy animation names still used in a few places */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -44,55 +105,78 @@ body {
     transform: translateY(0);
   }
 }
-
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.94);
   }
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
-
 .animate-slideUp {
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out both;
+}
+.animate-scaleIn {
+  animation: scaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.animate-scaleIn {
-  animation: scaleIn 0.3s ease-out;
+/* Staggered entrance for lists */
+.stagger > * {
+  animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger > *:nth-child(4) { animation-delay: 0.14s; }
+.stagger > *:nth-child(5) { animation-delay: 0.18s; }
+.stagger > *:nth-child(n + 6) { animation-delay: 0.22s; }
 
 /* Remove number input spinners */
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type='number'] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Safe areas for mobile */
-@supports (padding: max(0px)) {
-  .safe-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
-}
-
-/* Select & input styling */
-select, input[type="date"] {
+select,
+input[type="date"],
+input[type="time"] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+/* Safe areas for installed PWA */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
