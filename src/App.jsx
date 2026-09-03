@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { TrendingUp, Target, Lightbulb, Clock } from "lucide-react";
 
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import Footer from "./components/Footer";
+import SyncBar from "./components/SyncBar";
 import FollowerTracker from "./components/FollowerTracker";
 import GoalTracker from "./components/GoalTracker";
 import IdeaBank from "./components/IdeaBank";
 import BestTimes from "./components/BestTimes";
 import Chatbot from "./components/Chatbot";
-import storage from "./data/storage";
+import api, { isRemote } from "./data/api";
 
 const TABS = [
   { id: "growth", label: "Büyüme", icon: TrendingUp },
@@ -21,38 +22,124 @@ const TABS = [
 function App() {
   const [tab, setTab] = useState("growth");
 
-  const [followers, setFollowers] = useState(() => storage.getFollowers());
-  const [goal, setGoal] = useState(() => storage.getGoal());
-  const [goalHistory, setGoalHistory] = useState(() => storage.getGoalHistory());
-  const [ideas, setIdeas] = useState(() => storage.getIdeas());
-  const [posts, setPosts] = useState(() => storage.getPosts());
+  // Önbellekle başla: bulut cevabı gelene kadar ekran boş kalmasın.
+  // Lazy initializer — localStorage her render'da değil, yalnızca ilk
+  // mount'ta okunur.
+  const [followers, setFollowers] = useState(() => api.readCache().followers);
+  const [goal, setGoal] = useState(() => api.readCache().goal);
+  const [goalHistory, setGoalHistory] = useState(() => api.readCache().goalHistory);
+  const [ideas, setIdeas] = useState(() => api.readCache().ideas);
+  const [posts, setPosts] = useState(() => api.readCache().posts);
 
-  // Each tab is its own page — start it at the top
+  const [status, setStatus] = useState(isRemote ? "loading" : "ready");
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [migration, setMigration] = useState(null);
+
+  const applyAll = (data) => {
+    setFollowers(data.followers);
+    setGoal(data.goal);
+    setGoalHistory(data.goalHistory);
+    setIdeas(data.ideas);
+    setPosts(data.posts);
+  };
+
+  const load = useCallback(async () => {
+    if (!isRemote) return;
+    setStatus("loading");
+    try {
+      const data = await api.loadAll();
+      applyAll(data);
+      setError(null);
+      setStatus("ready");
+
+      // Bulut boş ama bu cihazda veri varsa taşımayı teklif et
+      const local = api.readCache();
+      const localCount =
+        local.followers.length + local.ideas.length + local.posts.length;
+      if (localCount > 0 && (await api.isRemoteEmpty())) {
+        setMigration({
+          followers: local.followers.length,
+          ideas: local.ideas.length,
+          posts: local.posts.length,
+        });
+      }
+    } catch (e) {
+      setError(e.message);
+      setStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Her sekme kendi sayfası — en üstten başlasın
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [tab]);
 
-  /* ---- followers ---- */
-  const handleAddFollower = (count, dateStr) =>
-    setFollowers([...storage.addFollower(count, dateStr)]);
-  const handleDeleteFollower = (date) =>
-    setFollowers([...storage.deleteFollower(date)]);
-
-  /* ---- goal ---- */
-  const handleSaveGoal = (g) => setGoal({ ...storage.setGoal(g) });
-  const handleClearGoal = () => setGoal(storage.clearGoal());
-  const handleCompleteGoal = (g, reachedCount) => {
-    setGoalHistory([...storage.archiveGoal(g, reachedCount)]);
-    setGoal(storage.clearGoal());
+  /**
+   * Yazma işlemlerinin ortak sarmalayıcısı: hatayı yakalar, ekranda
+   * gösterir ve state'i sadece işlem başarılıysa günceller.
+   */
+  const run = async (fn, apply) => {
+    setBusy(true);
+    try {
+      const result = await fn();
+      apply(result);
+      setError(null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  /* ---- ideas ---- */
-  const handleSaveIdea = (i) => setIdeas([...storage.saveIdea(i)]);
-  const handleDeleteIdea = (id) => setIdeas([...storage.deleteIdea(id)]);
+  /* ---- takipçi ---- */
+  const handleAddFollower = (count, dateStr) =>
+    run(() => api.addFollower(count, dateStr), (r) => setFollowers([...r]));
+  const handleDeleteFollower = (date) =>
+    run(() => api.deleteFollower(date), (r) => setFollowers([...r]));
 
-  /* ---- posts ---- */
-  const handleSavePost = (p) => setPosts([...storage.savePost(p)]);
-  const handleDeletePost = (id) => setPosts([...storage.deletePost(id)]);
+  /* ---- hedef ---- */
+  const handleSaveGoal = (g) =>
+    run(() => api.setGoal(g), (r) => setGoal(r ? { ...r } : null));
+  const handleClearGoal = () => run(() => api.clearGoal(), () => setGoal(null));
+  const handleCompleteGoal = (g, reachedCount) =>
+    run(
+      () => api.archiveGoal(g, reachedCount),
+      (history) => {
+        setGoalHistory([...history]);
+        setGoal(null);
+      },
+    );
+
+  /* ---- fikirler ---- */
+  const handleSaveIdea = (i) =>
+    run(() => api.saveIdea(i), (r) => setIdeas([...r]));
+  const handleDeleteIdea = (id) =>
+    run(() => api.deleteIdea(id), (r) => setIdeas([...r]));
+
+  /* ---- gönderiler ---- */
+  const handleSavePost = (p) =>
+    run(() => api.savePost(p), (r) => setPosts([...r]));
+  const handleDeletePost = (id) =>
+    run(() => api.deletePost(id), (r) => setPosts([...r]));
+
+  /* ---- yerelden buluta taşıma ---- */
+  const handleMigrate = async () => {
+    setBusy(true);
+    try {
+      applyAll(await api.pushLocalToRemote());
+      setMigration(null);
+      setError(null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-pink-veil font-body">
@@ -71,6 +158,17 @@ function App() {
         {/* flex-1 keeps the footer below the fold on short pages so the
             bottom bar never covers it */}
         <main className="flex-1 w-full max-w-lg mx-auto px-5 pt-7">
+          <SyncBar
+            isRemote={isRemote}
+            status={status}
+            error={error}
+            onRetry={load}
+            migration={migration}
+            onMigrate={handleMigrate}
+            onDismissMigration={() => setMigration(null)}
+            busy={busy}
+          />
+
           {tab === "growth" && (
             <FollowerTracker
               followers={followers}
@@ -105,7 +203,6 @@ function App() {
               onDeletePost={handleDeletePost}
             />
           )}
-
         </main>
 
         <Footer />

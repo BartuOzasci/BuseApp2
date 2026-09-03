@@ -1,4 +1,4 @@
-const CACHE_NAME = "buse-app-v1";
+const CACHE_NAME = "buse-app-v2";
 const ASSETS_TO_CACHE = ["/", "/index.html", "/logo.jpeg", "/manifest.json"];
 
 // Install — cache shell assets
@@ -23,17 +23,27 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch — network first, fallback to cache
+// Fetch — network first, fall back to cache.
+//
+// Only same-origin GET requests are touched. Supabase calls are cross-origin
+// and often non-GET; caching them would both fail (cache.put rejects on POST)
+// and risk serving stale rows after a write.
 self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  if (request.method !== "GET") return;
+  if (new URL(request.url).origin !== self.location.origin) return;
+
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
         const clone = response.clone();
         caches
           .open(CACHE_NAME)
-          .then((cache) => cache.put(event.request, clone));
+          .then((cache) => cache.put(request, clone))
+          .catch(() => {});
         return response;
       })
-      .catch(() => caches.match(event.request)),
+      .catch(() => caches.match(request)),
   );
 });
