@@ -1,274 +1,401 @@
 import React, { useState, useMemo } from "react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Area,
-  AreaChart,
 } from "recharts";
-import { TrendingUp, Users, Plus, X, ChevronDown } from "lucide-react";
-import storage from "../data/storage";
-import { filterFollowersByRange, formatDateShort } from "../utils/dateUtils";
+import {
+  TrendingUp,
+  Plus,
+  Trash2,
+  ChevronDown,
+  LineChart as LineChartIcon,
+  CalendarDays,
+} from "lucide-react";
+import colors from "../config/colors";
+import { SectionHeader, EmptyState } from "./ui";
+import {
+  filterFollowersByRange,
+  formatDateShort,
+  formatDate,
+  toDateStr,
+  daysBetween,
+  compactNumber,
+  trNumber,
+} from "../utils/dateUtils";
 
 const TIME_RANGES = [
-  { key: "1w", label: "Son 1 Hafta" },
-  { key: "1m", label: "Son 1 Ay" },
-  { key: "3m", label: "Son 3 Ay" },
-  { key: "6m", label: "Son 6 Ay" },
-  { key: "1y", label: "Son 1 Yıl" },
+  { key: "1w", label: "1 Hafta" },
+  { key: "1m", label: "1 Ay" },
+  { key: "3m", label: "3 Ay" },
+  { key: "6m", label: "6 Ay" },
+  { key: "1y", label: "1 Yıl" },
+  { key: "all", label: "Tümü" },
 ];
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg border border-pink-100 px-4 py-3">
-        <p className="text-sm text-gray-400">{label}</p>
-        <p className="text-base font-semibold text-pink-600">
-          {Number(payload[0].value).toLocaleString("tr-TR")} takipçi
+const ChartTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="bg-white/95 backdrop-blur rounded-2xl shadow-card-hover border border-pink-100 px-4 py-3">
+      <p className="text-[10px] uppercase tracking-label text-pink-400">
+        {formatDate(p.fullDate)}
+      </p>
+      <p className="font-display text-xl text-ink-900 tabular mt-1">
+        {trNumber(p.count)}
+      </p>
+      {p.change !== null && (
+        <p
+          className={`text-[11px] font-semibold tabular mt-0.5 ${
+            p.change >= 0 ? "text-pink-600" : "text-ink-400"
+          }`}
+        >
+          {p.change >= 0 ? "+" : ""}
+          {trNumber(p.change)} önceki kayda göre
         </p>
-      </div>
-    );
-  }
-  return null;
+      )}
+    </div>
+  );
 };
 
-const FollowerTracker = ({ followers, onAddFollower }) => {
+const FollowerTracker = ({ followers, onAddFollower, onDeleteFollower }) => {
   const [inputValue, setInputValue] = useState("");
-  const [selectedRange, setSelectedRange] = useState(null);
-  const [showTable, setShowTable] = useState(false);
+  const [inputDate, setInputDate] = useState(toDateStr(new Date()));
+  const [range, setRange] = useState("1m");
+  const [showLog, setShowLog] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (inputValue && !isNaN(inputValue)) {
-      onAddFollower(Number(inputValue));
-      setInputValue("");
-    }
+    const n = Number(inputValue);
+    if (!inputValue || Number.isNaN(n) || n < 0) return;
+    onAddFollower(n, inputDate);
+    setInputValue("");
+    setInputDate(toDateStr(new Date()));
   };
 
-  const chartData = useMemo(() => {
-    return followers.map((f) => ({
-      date: formatDateShort(f.date),
-      count: f.count,
-      fullDate: f.date,
-    }));
-  }, [followers]);
+  // Range drives the chart as well as the log. The previous build filtered only
+  // the table, which made the range buttons look broken.
+  const ranged = useMemo(
+    () => filterFollowersByRange(followers, range),
+    [followers, range],
+  );
 
-  const filteredData = useMemo(() => {
-    if (!selectedRange) return [];
-    return filterFollowersByRange(followers, selectedRange).map((f) => ({
-      date: formatDateShort(f.date),
-      count: f.count,
-      fullDate: f.date,
-    }));
-  }, [followers, selectedRange]);
+  const chartData = useMemo(
+    () =>
+      ranged.map((f, i) => ({
+        date: formatDateShort(f.date),
+        count: f.count,
+        fullDate: f.date,
+        change: i > 0 ? f.count - ranged[i - 1].count : null,
+      })),
+    [ranged],
+  );
 
-  const lastCount =
-    followers.length > 0 ? followers[followers.length - 1].count : 0;
-  const prevCount =
-    followers.length > 1 ? followers[followers.length - 2].count : lastCount;
-  const diff = lastCount - prevCount;
-  const diffPercent = prevCount > 0 ? ((diff / prevCount) * 100).toFixed(1) : 0;
+  const stats = useMemo(() => {
+    const last = followers[followers.length - 1];
+    const prev = followers[followers.length - 2];
+    const lastCount = last ? last.count : 0;
+    const diff = prev ? lastCount - prev.count : 0;
+    const diffPct = prev && prev.count ? ((diff / prev.count) * 100).toFixed(1) : "0.0";
 
-  return (
-    <section className="px-4 py-4">
-      {/* Stats Card */}
-      {followers.length > 0 && (
-        <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl p-4 mb-4 text-white shadow-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-pink-100 text-sm font-body">Mevcut Takipçi</p>
-              <p className="text-3xl font-bold font-display">
-                {lastCount.toLocaleString("tr-TR")}
-              </p>
-            </div>
-            <div
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${diff >= 0 ? "bg-white/20" : "bg-red-400/30"}`}
-            >
-              <TrendingUp size={12} className={diff < 0 ? "rotate-180" : ""} />
-              <span>
-                {diff >= 0 ? "+" : ""}
-                {diff.toLocaleString("tr-TR")} ({diffPercent}%)
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+    const first = ranged[0];
+    const rangeGrowth = first && last ? lastCount - first.count : 0;
+    const span = first && last ? Math.max(1, daysBetween(first.date, last.date)) : 0;
+    const perDay = span ? Math.round(rangeGrowth / span) : 0;
 
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Users
-              size={20}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300"
-            />
+    return { lastCount, diff, diffPct, rangeGrowth, perDay };
+  }, [followers, ranged]);
+
+  const rangeLabel = TIME_RANGES.find((r) => r.key === range)?.label ?? "Bu dönem";
+
+  if (followers.length === 0) {
+    return (
+      <section className="animate-rise">
+        <SectionHeader eyebrow="Büyüme" title="Takipçi Takibi" />
+        <form onSubmit={handleSubmit} className="card p-5 mb-4">
+          <p className="field-label mb-2">Mevcut takipçi sayın</p>
+          <div className="flex gap-2">
             <input
               type="number"
+              inputMode="numeric"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Mevcut takipçi sayını gir..."
-              className="w-full pl-10 pr-4 py-4 rounded-xl border border-pink-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-base font-body transition-all bg-white"
+              placeholder="Örn. 12480"
+              className="input-lux flex-1 tabular"
             />
+            <button type="submit" className="btn-primary px-5">
+              <Plus size={16} />
+            </button>
           </div>
-          <button
-            type="submit"
-            className="px-5 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl font-medium text-base hover:shadow-card-hover active:scale-95 transition-all flex items-center gap-1.5"
-          >
-            <Plus size={16} />
-            <span>Ekle</span>
-          </button>
+        </form>
+        <EmptyState
+          icon={LineChartIcon}
+          title="Grafiğin burada oluşacak"
+          hint="İlk sayını girdiğin andan itibaren büyümen kaydediliyor. En az iki kayıt olunca eğri çizilmeye başlar."
+        />
+      </section>
+    );
+  }
+
+  return (
+    <section className="animate-rise">
+      <SectionHeader eyebrow="Büyüme" title="Takipçi Takibi" />
+
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-lux bg-pink-sheen text-white shadow-lift mb-4">
+        <div
+          className="absolute -top-16 -right-10 w-52 h-52 rounded-full opacity-20 blur-2xl"
+          style={{
+            background: "radial-gradient(circle, #fff 0%, transparent 70%)",
+          }}
+        />
+        <div className="relative px-6 pt-6 pb-5">
+          <p className="text-[10px] uppercase tracking-wider2 text-pink-100/90">
+            Mevcut Takipçi
+          </p>
+          <div className="flex items-end gap-3 mt-2">
+            <p className="font-display text-[46px] leading-none tabular">
+              {trNumber(stats.lastCount)}
+            </p>
+            <span
+              className={`mb-1.5 chip ${
+                stats.diff >= 0
+                  ? "bg-white/20 text-white"
+                  : "bg-ink-900/25 text-white"
+              }`}
+            >
+              <TrendingUp
+                size={12}
+                className={stats.diff < 0 ? "rotate-180" : ""}
+              />
+              {stats.diff >= 0 ? "+" : ""}
+              {trNumber(stats.diff)} · {stats.diffPct}%
+            </span>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-white/20 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-label text-pink-100/80">
+                {rangeLabel} büyümesi
+              </p>
+              <p className="font-display text-xl tabular mt-1">
+                {stats.rangeGrowth >= 0 ? "+" : ""}
+                {trNumber(stats.rangeGrowth)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-label text-pink-100/80">
+                Günlük ortalama
+              </p>
+              <p className="font-display text-xl tabular mt-1">
+                {stats.perDay >= 0 ? "+" : ""}
+                {trNumber(stats.perDay)}
+              </p>
+            </div>
+          </div>
         </div>
-      </form>
+      </div>
+
+      {/* Range rail */}
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 mb-3">
+        {TIME_RANGES.map((r) => (
+          <button
+            key={r.key}
+            onClick={() => setRange(r.key)}
+            className={`shrink-0 px-4 py-2 rounded-full text-[12px] font-semibold tracking-wide transition-all duration-200 ${
+              range === r.key
+                ? "bg-ink-900 text-white shadow-card"
+                : "bg-white border border-pink-100 text-ink-500 hover:border-pink-200"
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
 
       {/* Chart */}
-      {chartData.length > 0 && (
-        <div className="bg-white rounded-2xl border border-pink-50 p-4 shadow-card mb-3">
-          <h3 className="text-base font-semibold text-gray-700 font-body mb-3 flex items-center gap-2">
-            <TrendingUp size={18} className="text-pink-500" />
-            Takipçi Grafiği
-          </h3>
-          <div className="h-56">
+      <div className="card p-5 mb-4">
+        {chartData.length > 1 ? (
+          <div className="h-60 -ml-3">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData}
-                margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient
-                    id="colorFollowers"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#ec4899" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
+                  <linearGradient id="followerFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="0%"
+                      stopColor={colors.primary}
+                      stopOpacity={0.22}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={colors.primary}
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f9fafb" />
+                <CartesianGrid
+                  vertical={false}
+                  stroke={colors.chart.grid}
+                  strokeDasharray="4 6"
+                />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 10, fill: "#9ca3af" }}
+                  tick={{ fontSize: 10, fill: colors.chart.axis }}
                   axisLine={false}
                   tickLine={false}
+                  minTickGap={24}
+                  dy={6}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "#9ca3af" }}
+                  width={44}
+                  tick={{ fontSize: 10, fill: colors.chart.axis }}
                   axisLine={false}
                   tickLine={false}
+                  tickFormatter={compactNumber}
+                  domain={["dataMin - 5", "dataMax + 5"]}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<ChartTooltip />}
+                  cursor={{
+                    stroke: colors.primaryLight,
+                    strokeWidth: 1,
+                    strokeDasharray: "4 4",
+                  }}
+                />
                 <Area
                   type="monotone"
                   dataKey="count"
-                  stroke="#ec4899"
-                  strokeWidth={2.5}
-                  fill="url(#colorFollowers)"
-                  dot={{ fill: "#db2777", r: 3, strokeWidth: 0 }}
+                  stroke={colors.chart.line}
+                  strokeWidth={2.25}
+                  fill="url(#followerFill)"
+                  dot={false}
                   activeDot={{
                     r: 5,
-                    fill: "#ec4899",
+                    fill: colors.chart.line,
                     stroke: "#fff",
-                    strokeWidth: 2,
+                    strokeWidth: 2.5,
                   }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="py-14 text-center text-[13px] text-ink-400">
+            {rangeLabel} için yeterli kayıt yok.
+          </p>
+        )}
+      </div>
 
-      {/* Time Range Buttons */}
-      {followers.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {TIME_RANGES.map((range) => (
-            <button
-              key={range.key}
-              onClick={() => {
-                setSelectedRange(range.key);
-                setShowTable(true);
-              }}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium font-body transition-all ${
-                selectedRange === range.key
-                  ? "bg-pink-500 text-white shadow-card"
-                  : "bg-pink-50 text-pink-600 hover:bg-pink-100"
-              }`}
-            >
-              {range.label}
-            </button>
-          ))}
+      {/* Add entry */}
+      <form onSubmit={handleSubmit} className="card p-5 mb-4">
+        <p className="field-label mb-2.5">Yeni kayıt</p>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Takipçi sayısı"
+            className="input-lux flex-1 tabular"
+          />
+          <button type="submit" className="btn-primary px-5" aria-label="Ekle">
+            <Plus size={16} />
+          </button>
         </div>
-      )}
+        <label className="mt-2.5 flex items-center gap-2.5 px-4 py-3 rounded-2xl border border-pink-100 bg-pink-50/40">
+          <CalendarDays size={15} className="text-pink-400 shrink-0" />
+          <span className="text-[12px] text-ink-500 shrink-0">Tarih</span>
+          <input
+            type="date"
+            value={inputDate}
+            max={toDateStr(new Date())}
+            onChange={(e) => setInputDate(e.target.value)}
+            className="flex-1 bg-transparent text-right text-[13px] text-ink-700 tabular outline-none"
+          />
+        </label>
+        <p className="mt-2 text-[11px] text-ink-400 leading-relaxed">
+          Aynı tarihe ikinci kez girersen kayıt güncellenir, yenisi eklenmez.
+        </p>
+      </form>
 
-      {/* Data Table Modal */}
-      {showTable && selectedRange && (
-        <div className="mt-3 bg-white rounded-2xl border border-pink-100 shadow-card overflow-hidden animate-slideUp">
-          <div className="flex items-center justify-between p-3 border-b border-pink-50">
-            <h4 className="text-base font-semibold text-gray-700 font-body">
-              {TIME_RANGES.find((r) => r.key === selectedRange)?.label}
-            </h4>
-            <button
-              onClick={() => setShowTable(false)}
-              className="p-1 rounded-full hover:bg-pink-50 transition-colors"
-            >
-              <X size={16} className="text-gray-400" />
-            </button>
-          </div>
-          <div className="max-h-64 overflow-y-auto">
-            {filteredData.length > 0 ? (
-              <table className="w-full">
-                <thead className="sticky top-0 bg-pink-50/80 backdrop-blur-sm">
-                  <tr>
-                    <th className="text-left px-4 py-2.5 text-sm font-medium text-pink-600">
-                      Tarih
-                    </th>
-                    <th className="text-right px-4 py-2.5 text-sm font-medium text-pink-600">
-                      Takipçi
-                    </th>
-                    <th className="text-right px-4 py-2.5 text-sm font-medium text-pink-600">
-                      Değişim
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.map((item, idx) => {
-                    const prev =
-                      idx > 0 ? filteredData[idx - 1].count : item.count;
-                    const change = item.count - prev;
-                    return (
-                      <tr
-                        key={item.fullDate}
-                        className="border-b border-pink-50/50 hover:bg-pink-50/30 transition-colors"
-                      >
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {item.date}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-800 font-medium text-right">
-                          {item.count.toLocaleString("tr-TR")}
-                        </td>
-                        <td
-                          className={`px-4 py-3 text-sm font-medium text-right ${change >= 0 ? "text-green-500" : "text-red-500"}`}
-                        >
-                          {change >= 0 ? "+" : ""}
-                          {change.toLocaleString("tr-TR")}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+      {/* Log */}
+      <div className="card overflow-hidden">
+        <button
+          onClick={() => setShowLog((v) => !v)}
+          className="w-full flex items-center justify-between px-5 py-4"
+        >
+          <span className="text-[13px] font-semibold text-ink-700">
+            Kayıtlar
+            <span className="ml-2 text-[11px] font-medium text-ink-400 tabular">
+              {ranged.length}
+            </span>
+          </span>
+          <ChevronDown
+            size={17}
+            className={`text-pink-400 transition-transform duration-300 ${
+              showLog ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        {showLog && (
+          <div className="max-h-72 overflow-y-auto border-t border-pink-50">
+            {ranged.length === 0 ? (
+              <p className="px-5 py-8 text-center text-[13px] text-ink-400">
+                Bu dönemde kayıt yok.
+              </p>
             ) : (
-              <div className="p-6 text-center text-sm text-gray-400">
-                Bu dönemde veri bulunmuyor
-              </div>
+              [...ranged].reverse().map((f, i, arr) => {
+                const older = arr[i + 1];
+                const change = older ? f.count - older.count : null;
+                return (
+                  <div
+                    key={f.date}
+                    className="flex items-center gap-3 px-5 py-3 border-b border-pink-50/70 last:border-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] text-ink-700">
+                        {formatDate(f.date)}
+                      </p>
+                      <p className="text-[11px] text-ink-400 tabular">
+                        {trNumber(f.count)} takipçi
+                      </p>
+                    </div>
+                    {change !== null && (
+                      <span
+                        className={`text-[12px] font-semibold tabular ${
+                          change > 0
+                            ? "text-pink-600"
+                            : change < 0
+                              ? "text-ink-400"
+                              : "text-ink-300"
+                        }`}
+                      >
+                        {change > 0 ? "+" : ""}
+                        {trNumber(change)}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => onDeleteFollower(f.date)}
+                      className="p-2 -mr-2 rounded-xl text-ink-300 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                      aria-label="Kaydı sil"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 };

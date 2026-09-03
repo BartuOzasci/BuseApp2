@@ -1,51 +1,64 @@
-// Chatbot pre-defined messages and responses
+// Chatbot copy and shared Turkish date labels
 export const WELCOME_MESSAGES = [
-  "Merhaba Buse! 🌸 Ben senin kişisel asistanınım.",
-  "Sana bu uygulama hakkında yardımcı olabilirim. İşte yapabileceklerin:",
+  "Merhaba Buse ✨ Ben senin içerik asistanınım.",
+  "Panelindeki verileri okuyup sana özetleyebilirim. Ne bakmak istersin?",
 ];
 
 export const FEATURE_LIST = [
   {
-    id: 'followers',
-    label: '📊 Takipçi Takibi',
-    description: 'Takipçi sayını gir ve grafiklerle takip et. Haftalık, aylık ve yıllık analizlerini gör.'
+    id: "growth",
+    label: "📈 Büyüme özetim",
+    description:
+      "Takipçi kayıtlarına bakıp son durumunu ve günlük ortalamanı çıkarırım.",
   },
   {
-    id: 'calendar',
-    label: '📅 Takvim',
-    description: 'Bugünün tarihini gör, ayın takvimini incele ve günlerini planla.'
+    id: "goal",
+    label: "🎯 Hedefime ne kadar kaldı?",
+    description:
+      "Aktif hedefini, kalan takipçiyi ve mevcut hızınla tahmini varış tarihini söylerim.",
   },
   {
-    id: 'todos',
-    label: '✅ Yapılacaklar Listesi',
-    description: 'Her gün için yapılacaklar listesi oluştur. Kartları kaydırarak günler arasında geç.'
+    id: "ideas",
+    label: "💡 Çekilecek fikirlerim",
+    description: "Çekim ve kurgu aşamasındaki fikirlerini önüne getiririm.",
   },
   {
-    id: 'content',
-    label: '🎬 İçerik Takvimi',
-    description: 'Haftalık içerik planını oluştur. Her gün için içerik fikirlerin ve planların.'
+    id: "besttime",
+    label: "🕐 Ne zaman paylaşayım?",
+    description:
+      "Kendi verine (yeterliyse) yoksa genel öneriye göre en iyi 3 aralığı söylerim.",
   },
   {
-    id: 'today_todos',
-    label: '📋 Bugünkü Yapılacaklarım',
-    description: 'Bugün yapman gereken şeyleri hemen listelerim.'
+    id: "help",
+    label: "❓ Neler yapabilirsin?",
+    description:
+      "Büyüme, Hedef, Fikir Bankası ve Paylaşım Saatleri bölümlerini okuyup özetleyebilirim. Veri girişini senin yapman gerekiyor, gerisini ben toparlarım.",
   },
-  {
-    id: 'weekly_content',
-    label: '🗓️ Bu Haftanın İçerik Planı',
-    description: 'Bu haftanın içerik takvimini sana özet olarak sunarım.'
-  }
 ];
 
-export const QUICK_ACTIONS = [
-  { id: 'today_todos', label: 'Bugünkü yapılacaklarım ne?' },
-  { id: 'weekly_content', label: 'Haftalık içerik planım ne?' },
-  { id: 'help', label: 'Ne yapabilirsin?' },
+export const DAYS_TR = [
+  "Pazar",
+  "Pazartesi",
+  "Salı",
+  "Çarşamba",
+  "Perşembe",
+  "Cuma",
+  "Cumartesi",
 ];
 
-export const DAYS_TR = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-export const DAYS_SHORT_TR = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+export const DAYS_SHORT_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+
 export const MONTHS_TR = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+  "Ocak",
+  "Şubat",
+  "Mart",
+  "Nisan",
+  "Mayıs",
+  "Haziran",
+  "Temmuz",
+  "Ağustos",
+  "Eylül",
+  "Ekim",
+  "Kasım",
+  "Aralık",
 ];

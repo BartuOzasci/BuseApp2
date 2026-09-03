@@ -1,9 +1,15 @@
 // LocalStorage helper utilities
+import { toDateStr } from "../utils/dateUtils";
+
 const STORAGE_KEYS = {
   FOLLOWERS: "buse_followers",
-  TODOS: "buse_todos",
-  CONTENT_CALENDAR: "buse_content_calendar",
+  GOAL: "buse_goal",
+  GOAL_HISTORY: "buse_goal_history",
+  IDEAS: "buse_ideas",
+  POSTS: "buse_posts",
 };
+
+const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const storage = {
   get(key) {
@@ -28,49 +34,109 @@ export const storage = {
     localStorage.removeItem(key);
   },
 
-  // Follower data
+  /* ---------------- Followers ---------------- */
+
   getFollowers() {
     return this.get(STORAGE_KEYS.FOLLOWERS) || [];
   },
 
-  addFollower(count) {
+  addFollower(count, dateStr) {
     const followers = this.getFollowers();
-    const today = new Date().toISOString().split("T")[0];
-    const existing = followers.findIndex((f) => f.date === today);
+    const date = dateStr || toDateStr(new Date());
+    const existing = followers.findIndex((f) => f.date === date);
     if (existing >= 0) {
-      followers[existing].count = count;
+      followers[existing].count = Number(count);
     } else {
-      followers.push({ date: today, count: Number(count) });
+      followers.push({ date, count: Number(count) });
     }
     followers.sort((a, b) => new Date(a.date) - new Date(b.date));
     this.set(STORAGE_KEYS.FOLLOWERS, followers);
     return followers;
   },
 
-  // Todo data
-  getTodos() {
-    return this.get(STORAGE_KEYS.TODOS) || {};
+  deleteFollower(date) {
+    const followers = this.getFollowers().filter((f) => f.date !== date);
+    this.set(STORAGE_KEYS.FOLLOWERS, followers);
+    return followers;
   },
 
-  setTodosForDate(dateStr, todos) {
-    const allTodos = this.getTodos();
-    allTodos[dateStr] = todos;
-    this.set(STORAGE_KEYS.TODOS, allTodos);
-    return allTodos;
+  /* ---------------- Goal ---------------- */
+
+  getGoal() {
+    return this.get(STORAGE_KEYS.GOAL);
   },
 
-  // Content Calendar
-  getContentCalendar() {
-    return this.get(STORAGE_KEYS.CONTENT_CALENDAR) || {};
+  setGoal(goal) {
+    this.set(STORAGE_KEYS.GOAL, goal);
+    return goal;
   },
 
-  setContentForDate(dateStr, content) {
-    const calendar = this.getContentCalendar();
-    calendar[dateStr] = content;
-    this.set(STORAGE_KEYS.CONTENT_CALENDAR, calendar);
-    return calendar;
+  clearGoal() {
+    this.remove(STORAGE_KEYS.GOAL);
+    return null;
+  },
+
+  getGoalHistory() {
+    return this.get(STORAGE_KEYS.GOAL_HISTORY) || [];
+  },
+
+  archiveGoal(goal, reachedCount) {
+    const history = this.getGoalHistory();
+    history.unshift({
+      id: uid(),
+      target: goal.target,
+      startCount: goal.startCount,
+      startDate: goal.startDate,
+      reachedCount,
+      reachedDate: toDateStr(new Date()),
+    });
+    this.set(STORAGE_KEYS.GOAL_HISTORY, history.slice(0, 20));
+    return history;
+  },
+
+  /* ---------------- Idea bank ---------------- */
+
+  getIdeas() {
+    return this.get(STORAGE_KEYS.IDEAS) || [];
+  },
+
+  saveIdea(idea) {
+    const ideas = this.getIdeas();
+    if (idea.id) {
+      const i = ideas.findIndex((x) => x.id === idea.id);
+      if (i >= 0) ideas[i] = idea;
+    } else {
+      ideas.unshift({ ...idea, id: uid(), createdAt: toDateStr(new Date()) });
+    }
+    this.set(STORAGE_KEYS.IDEAS, ideas);
+    return ideas;
+  },
+
+  deleteIdea(id) {
+    const ideas = this.getIdeas().filter((x) => x.id !== id);
+    this.set(STORAGE_KEYS.IDEAS, ideas);
+    return ideas;
+  },
+
+  /* ---------------- Posts (best time heatmap) ---------------- */
+
+  getPosts() {
+    return this.get(STORAGE_KEYS.POSTS) || [];
+  },
+
+  savePost(post) {
+    const posts = this.getPosts();
+    posts.unshift({ ...post, id: uid() });
+    this.set(STORAGE_KEYS.POSTS, posts);
+    return posts;
+  },
+
+  deletePost(id) {
+    const posts = this.getPosts().filter((p) => p.id !== id);
+    this.set(STORAGE_KEYS.POSTS, posts);
+    return posts;
   },
 };
 
-export { STORAGE_KEYS };
+export { STORAGE_KEYS, uid };
 export default storage;
