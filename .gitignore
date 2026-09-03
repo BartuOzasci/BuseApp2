@@ -3,3 +3,7 @@ dist/
 .env
 *.local
 
+
+# Vite env dosyalari (.env.example haric)
+.env.*
+!.env.example
