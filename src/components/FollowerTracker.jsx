@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   AreaChart,
   Area,
@@ -65,8 +65,18 @@ const ChartTooltip = ({ active, payload }) => {
 const FollowerTracker = ({ followers, onAddFollower, onDeleteFollower }) => {
   const [inputValue, setInputValue] = useState("");
   const [inputDate, setInputDate] = useState(toDateStr(new Date()));
-  const [range, setRange] = useState("1m");
+  const [range, setRange] = useState("all");
   const [showLog, setShowLog] = useState(false);
+  const railRef = useRef(null);
+
+  // "Tümü" is the default but sits at the far end of the scrolling rail, so it
+  // would be off-screen on load. Nudge the rail once so the active chip shows.
+  useEffect(() => {
+    const rail = railRef.current;
+    const active = rail?.querySelector("[data-active=true]");
+    if (rail && active)
+      rail.scrollLeft = active.offsetLeft + active.offsetWidth - rail.clientWidth;
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -200,12 +210,48 @@ const FollowerTracker = ({ followers, onAddFollower, onDeleteFollower }) => {
         </div>
       </div>
 
+      {/* Add entry */}
+      <form onSubmit={handleSubmit} className="card p-5 mb-4">
+        <p className="field-label mb-2.5">Yeni kayıt</p>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Takipçi sayısı"
+            className="input-lux flex-1 tabular"
+          />
+          <button type="submit" className="btn-primary px-5" aria-label="Ekle">
+            <Plus size={16} />
+          </button>
+        </div>
+        <label className="mt-2.5 flex items-center gap-2.5 px-4 py-3 rounded-2xl border border-pink-100 bg-pink-50/40">
+          <CalendarDays size={15} className="text-pink-400 shrink-0" />
+          <span className="text-[12px] text-ink-500 shrink-0">Tarih</span>
+          <input
+            type="date"
+            value={inputDate}
+            max={toDateStr(new Date())}
+            onChange={(e) => setInputDate(e.target.value)}
+            className="flex-1 bg-transparent text-right text-[13px] text-ink-700 tabular outline-none"
+          />
+        </label>
+        <p className="mt-2 text-[11px] text-ink-400 leading-relaxed">
+          Aynı tarihe ikinci kez girersen kayıt güncellenir, yenisi eklenmez.
+        </p>
+      </form>
+
       {/* Range rail */}
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 mb-3">
+      <div
+        ref={railRef}
+        className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 mb-3"
+      >
         {TIME_RANGES.map((r) => (
           <button
             key={r.key}
             onClick={() => setRange(r.key)}
+            data-active={range === r.key}
             className={`shrink-0 px-4 py-2 rounded-full text-[12px] font-semibold tracking-wide transition-all duration-200 ${
               range === r.key
                 ? "bg-ink-900 text-white shadow-card"
@@ -292,38 +338,6 @@ const FollowerTracker = ({ followers, onAddFollower, onDeleteFollower }) => {
           </p>
         )}
       </div>
-
-      {/* Add entry */}
-      <form onSubmit={handleSubmit} className="card p-5 mb-4">
-        <p className="field-label mb-2.5">Yeni kayıt</p>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            inputMode="numeric"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Takipçi sayısı"
-            className="input-lux flex-1 tabular"
-          />
-          <button type="submit" className="btn-primary px-5" aria-label="Ekle">
-            <Plus size={16} />
-          </button>
-        </div>
-        <label className="mt-2.5 flex items-center gap-2.5 px-4 py-3 rounded-2xl border border-pink-100 bg-pink-50/40">
-          <CalendarDays size={15} className="text-pink-400 shrink-0" />
-          <span className="text-[12px] text-ink-500 shrink-0">Tarih</span>
-          <input
-            type="date"
-            value={inputDate}
-            max={toDateStr(new Date())}
-            onChange={(e) => setInputDate(e.target.value)}
-            className="flex-1 bg-transparent text-right text-[13px] text-ink-700 tabular outline-none"
-          />
-        </label>
-        <p className="mt-2 text-[11px] text-ink-400 leading-relaxed">
-          Aynı tarihe ikinci kez girersen kayıt güncellenir, yenisi eklenmez.
-        </p>
-      </form>
 
       {/* Log */}
       <div className="card overflow-hidden">
